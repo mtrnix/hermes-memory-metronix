@@ -7,5 +7,6 @@ build/
 *.egg-info/
 .DS_Store
 .omx/
+.worktrees/
 .ruff_cache/
 .env

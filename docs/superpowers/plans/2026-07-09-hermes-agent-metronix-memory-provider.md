@@ -1,5 +1,7 @@
 # Hermes Agent Metronix Memory Provider Implementation Plan
 
+> Superseded on 2026-07-10: `plugin/metronix/` is the sole provider source.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship `hermes-memory-metronix` as a standalone Hermes memory-provider plugin and close the core acceptance criteria from `NousResearch/hermes-agent#57100`: prefetch injection, write-through, cross-profile sharing, config-gated behavior, and a credible upstream PR/demo package.

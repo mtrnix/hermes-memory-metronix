@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 from pathlib import Path
+import tomllib
 
 
-def test_provider_exports_exist() -> None:
-    from hermes_memory_metronix.client import MetronixClient
-    from hermes_memory_metronix.config import ProviderConfig
-    from hermes_memory_metronix.provider import MetronixMemoryProvider
+def test_only_the_hermes_plugin_package_is_shipped() -> None:
+    root = Path(__file__).resolve().parents[2]
 
-    assert ProviderConfig is not None
-    assert MetronixClient is not None
-    assert MetronixMemoryProvider is not None
+    assert not (root / "src" / "hermes_memory_metronix").exists()
+    assert (root / "plugin" / "metronix" / "plugin.yaml").is_file()
+
+
+def test_plugin_metadata_is_declared_as_package_data() -> None:
+    root = Path(__file__).resolve().parents[2]
+    project = tomllib.loads((root / "pyproject.toml").read_text())
+
+    assert project["tool"]["setuptools"]["package-data"]["metronix"] == ["plugin.yaml"]
 
 
 def test_repo_excludes_generated_python_cache() -> None:

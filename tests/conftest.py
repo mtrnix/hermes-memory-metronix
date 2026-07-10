@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-for import_root in (PROJECT_ROOT / "src", PROJECT_ROOT / "plugin"):
+for import_root in (PROJECT_ROOT / "plugin",):
     if str(import_root) not in sys.path:
         sys.path.insert(0, str(import_root))
 
