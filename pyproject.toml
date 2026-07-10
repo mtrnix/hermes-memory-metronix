@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-memory-metronix"
+version = "0.1.0"
+description = "Hermes MemoryProvider plugin backed by Metronix Memory"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["requests>=2.31.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = ["integration: tests that require a live Metronix backend"]
