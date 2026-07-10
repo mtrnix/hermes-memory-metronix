@@ -7,3 +7,5 @@ build/
 *.egg-info/
 .DS_Store
 .omx/
+.ruff_cache/
+.env
