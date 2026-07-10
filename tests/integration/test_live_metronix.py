@@ -4,11 +4,11 @@ import os
 
 import pytest
 
-from hermes_memory_metronix.client import MetronixClient
+from metronix.client import MetronixClient
 
 
 @pytest.mark.integration
-def test_live_store_search_delete_smoke() -> None:
+def test_live_search_smoke() -> None:
     if not os.environ.get("RUN_INTEGRATION_TESTS"):
         pytest.skip("set RUN_INTEGRATION_TESTS=1 for live Metronix verification")
 
@@ -17,10 +17,10 @@ def test_live_store_search_delete_smoke() -> None:
     workspace_id = os.environ["METRONIX_WORKSPACE_ID"]
     agent_id = os.environ["METRONIX_AGENT_ID"]
 
-    client = MetronixClient(base_url=base_url, auth_token=token)
-    result = client.search_memory(
+    client = MetronixClient(
+        base_url=base_url,
         workspace_id=workspace_id,
-        agent_id=agent_id,
-        query="smoke",
+        auth_token=token,
     )
-    assert "records" in result
+    result = client.search_memory(query="smoke", top_k=1, agent_id=agent_id)
+    assert isinstance(result, list)

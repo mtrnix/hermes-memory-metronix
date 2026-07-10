@@ -21,9 +21,12 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src", "plugin"]
+where = ["plugin"]
+
+[tool.setuptools.package-data]
+metronix = ["plugin.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src", "plugin"]
+pythonpath = ["plugin"]
 markers = ["integration: tests that require a live Metronix backend"]

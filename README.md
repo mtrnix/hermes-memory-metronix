@@ -33,11 +33,7 @@ What is intentionally still conservative:
 
 ## Layout
 
-The recovered package lives in:
-
-- `src/hermes_memory_metronix/`
-
-The older Hermes installable plugin scaffold from the remote repository lives in:
+The only shipped provider implementation is:
 
 - `plugin/metronix/`
 
