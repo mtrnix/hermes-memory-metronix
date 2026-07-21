@@ -3,14 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 
-def test_provider_exports_exist() -> None:
-    from hermes_memory_metronix.client import MetronixClient
-    from hermes_memory_metronix.config import ProviderConfig
-    from hermes_memory_metronix.provider import MetronixMemoryProvider
+def test_plugin_package_is_the_only_provider_implementation() -> None:
+    root = Path(__file__).resolve().parents[2]
 
-    assert ProviderConfig is not None
-    assert MetronixClient is not None
-    assert MetronixMemoryProvider is not None
+    assert (root / "plugin" / "metronix" / "__init__.py").is_file()
+    assert not (root / "src" / "hermes_memory_metronix").exists()
 
 
 def test_repo_excludes_generated_python_cache() -> None:

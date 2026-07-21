@@ -31,6 +31,7 @@ def test_repo_root_registers_memory_provider() -> None:
 
     assert collector.provider is not None
     assert collector.provider.name == "metronix"
+    assert collector.provider.__class__.__module__ == "metronix"
 
 
 def test_repo_root_includes_plugin_yaml() -> None:
