@@ -22,8 +22,8 @@ def test_repo_excludes_generated_python_cache() -> None:
     assert ".DS_Store" in gitignore
 
 
-def test_readme_documents_local_checks() -> None:
+def test_readme_documents_locked_local_checks() -> None:
     root = Path(__file__).resolve().parents[2]
     readme = (root / "README.md").read_text()
     assert "## Development" in readme
-    assert "python3 -m pytest tests/unit -v" in readme
+    assert "uv run --extra dev pytest tests/unit -v" in readme

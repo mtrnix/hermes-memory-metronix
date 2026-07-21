@@ -161,6 +161,6 @@ Requires `METRONIX_AUTH_TOKEN` to be a REST JWT or personal API key for
 Run the fast local checks:
 
 ```bash
-python3 -m pytest tests/unit -v
-RUN_INTEGRATION_TESTS=1 python3 -m pytest tests/integration/test_live_metronix.py -v
+uv run --extra dev pytest tests/unit -v
+RUN_INTEGRATION_TESTS=1 uv run --extra dev pytest tests/integration/test_live_metronix.py -v
 ```
