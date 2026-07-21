@@ -73,6 +73,27 @@ def test_load_config_prefers_file_for_non_secret_config(monkeypatch, tmp_path: P
     assert cfg["auth_token"] == "secret"
 
 
+def test_load_config_preserves_environment_rest_token_over_file(monkeypatch, tmp_path: Path):
+    hermes_home = tmp_path / ".hermes"
+    hermes_home.mkdir(parents=True)
+    (hermes_home / "metronix.json").write_text(
+        json.dumps(
+            {
+                "base_url": "http://file.example",
+                "workspace_id": "WS_FILE",
+                "auth_token": "stale-file-token",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("METRONIX_AUTH_TOKEN", "environment-token")
+    monkeypatch.setattr("metronix._get_hermes_home", lambda: hermes_home)
+
+    provider = MetronixMemoryProvider()
+
+    assert provider._load_config()["auth_token"] == "environment-token"
+
+
 def test_initialize_prefers_runtime_agent_identity_over_default(monkeypatch, tmp_path: Path):
     hermes_home = tmp_path / ".hermes"
     hermes_home.mkdir(parents=True)

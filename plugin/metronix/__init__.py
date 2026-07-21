@@ -260,6 +260,15 @@ class MetronixMemoryProvider(MemoryProvider):
             "timeout_seconds": float(os.environ.get("METRONIX_TIMEOUT_SECONDS", "20")),
         }
         merged.update(file_cfg)
+        for config_key, environment_key in (
+            ("auth_token", "METRONIX_AUTH_TOKEN"),
+            ("email", "METRONIX_EMAIL"),
+            ("password", "METRONIX_PASSWORD"),
+            ("agent_id", "METRONIX_AGENT_ID"),
+        ):
+            environment_value = os.environ.get(environment_key)
+            if environment_value:
+                merged[config_key] = environment_value
         return merged
 
     def _read_scope(self) -> str:
