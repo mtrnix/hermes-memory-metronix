@@ -35,3 +35,11 @@ def test_readme_documents_locked_local_checks() -> None:
     readme = (root / "README.md").read_text()
     assert "## Development" in readme
     assert "uv run --extra dev pytest tests/unit -v" in readme
+
+
+def test_readme_documents_real_hermes_compatibility_check() -> None:
+    root = Path(__file__).resolve().parents[2]
+    readme = (root / "README.md").read_text()
+
+    assert "HERMES_AGENT_SRC=/absolute/path/to/hermes-agent" in readme
+    assert "tests/unit/test_real_abc_contract.py" in readme
