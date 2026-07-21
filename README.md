@@ -33,7 +33,8 @@ What is intentionally still conservative:
 
 ## Layout
 
-The only shipped provider implementation is:
+The installable Hermes plugin is this repository root. Its provider
+implementation lives in:
 
 - `plugin/metronix/`
 
@@ -41,13 +42,12 @@ Hermes discovers user-installed memory providers from:
 
 - `~/.hermes/plugins/<name>/__init__.py`
 
-## Local install for Hermes
+## Install for Hermes
 
-Copy the plugin directory into your Hermes home:
+Install the repository into your Hermes plugin directory:
 
 ```bash
-mkdir -p ~/.hermes/plugins
-cp -R plugin/metronix ~/.hermes/plugins/metronix
+hermes plugins install mtrnix/hermes-memory-metronix --no-enable
 ```
 
 Then set Hermes to use it:
@@ -55,12 +55,6 @@ Then set Hermes to use it:
 ```yaml
 memory:
   provider: metronix
-```
-
-Or per-session:
-
-```bash
-hermes chat --memory-provider metronix
 ```
 
 ## Plugin config
@@ -157,6 +151,21 @@ Requires `METRONIX_AUTH_TOKEN` to be a REST JWT or personal API key for
 Run the fast local checks:
 
 ```bash
-python3 -m pytest tests/unit -v
-RUN_INTEGRATION_TESTS=1 python3 -m pytest tests/integration/test_live_metronix.py -v
+uv run --extra dev pytest tests/unit -v
+RUN_INTEGRATION_TESTS=1 uv run --extra dev pytest tests/integration/test_live_metronix.py -v
 ```
+
+### Verify against Hermes
+
+Clone a clean Hermes checkout separately, then verify both the current
+`MemoryProvider` abstract base class and Hermes's real plugin loader:
+
+```bash
+HERMES_AGENT_SRC=/absolute/path/to/hermes-agent \
+  uv run --extra dev pytest \
+  tests/unit/test_real_abc_contract.py tests/unit/test_hermes_plugin.py -v
+```
+
+The compatibility tests skip with an explicit reason when `HERMES_AGENT_SRC`
+does not point to a Hermes checkout. They should pass before publishing a
+plugin release.

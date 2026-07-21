@@ -4,11 +4,14 @@ from pathlib import Path
 import tomllib
 
 
-def test_only_the_hermes_plugin_package_is_shipped() -> None:
+def test_plugin_package_is_the_only_provider_implementation() -> None:
     root = Path(__file__).resolve().parents[2]
 
-    assert not (root / "src" / "hermes_memory_metronix").exists()
+    assert (root / "__init__.py").is_file()
+    assert (root / "plugin.yaml").is_file()
+    assert (root / "plugin" / "metronix" / "__init__.py").is_file()
     assert (root / "plugin" / "metronix" / "plugin.yaml").is_file()
+    assert not (root / "src" / "hermes_memory_metronix").exists()
 
 
 def test_plugin_metadata_is_declared_as_package_data() -> None:
@@ -27,8 +30,16 @@ def test_repo_excludes_generated_python_cache() -> None:
     assert ".DS_Store" in gitignore
 
 
-def test_readme_documents_local_checks() -> None:
+def test_readme_documents_locked_local_checks() -> None:
     root = Path(__file__).resolve().parents[2]
     readme = (root / "README.md").read_text()
     assert "## Development" in readme
-    assert "python3 -m pytest tests/unit -v" in readme
+    assert "uv run --extra dev pytest tests/unit -v" in readme
+
+
+def test_readme_documents_real_hermes_compatibility_check() -> None:
+    root = Path(__file__).resolve().parents[2]
+    readme = (root / "README.md").read_text()
+
+    assert "HERMES_AGENT_SRC=/absolute/path/to/hermes-agent" in readme
+    assert "tests/unit/test_real_abc_contract.py" in readme
