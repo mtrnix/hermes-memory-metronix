@@ -54,7 +54,7 @@ Out of scope for this phase:
 
 Create these under:
 
-- `standalone/hermes-memory-metronix/tests/unit/`
+- `tests/unit/`
 
 ### 1. Provider contract
 
@@ -190,7 +190,7 @@ Cases:
 
 Create these under:
 
-- `standalone/hermes-memory-metronix/tests/integration/`
+- `tests/integration/`
 
 These tests should be skipped unless:
 

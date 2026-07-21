@@ -33,11 +33,7 @@ What is intentionally still conservative:
 
 ## Layout
 
-The recovered package lives in:
-
-- `src/hermes_memory_metronix/`
-
-The older Hermes installable plugin scaffold from the remote repository lives in:
+The installable Hermes plugin lives in:
 
 - `plugin/metronix/`
 
@@ -164,3 +160,18 @@ Run the fast local checks:
 uv run --extra dev pytest tests/unit -v
 RUN_INTEGRATION_TESTS=1 uv run --extra dev pytest tests/integration/test_live_metronix.py -v
 ```
+
+### Verify against Hermes
+
+Clone a clean Hermes checkout separately, then verify both the current
+`MemoryProvider` abstract base class and Hermes's real plugin loader:
+
+```bash
+HERMES_AGENT_SRC=/absolute/path/to/hermes-agent \
+  uv run --extra dev pytest \
+  tests/unit/test_real_abc_contract.py tests/unit/test_hermes_plugin.py -v
+```
+
+The compatibility tests skip with an explicit reason when `HERMES_AGENT_SRC`
+does not point to a Hermes checkout. They should pass before publishing a
+plugin release.
