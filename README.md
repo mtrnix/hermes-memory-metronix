@@ -57,6 +57,16 @@ memory:
   provider: metronix
 ```
 
+## Python distribution
+
+`pip install hermes-memory-metronix` distributes the adapter for development
+and Hermes-hosted environments. It does not register the provider with Hermes.
+For Hermes discovery, install this GitHub plugin with:
+
+```bash
+hermes plugins install mtrnix/hermes-memory-metronix --no-enable
+```
+
 ## Plugin config
 
 The plugin reads non-secret config from:
