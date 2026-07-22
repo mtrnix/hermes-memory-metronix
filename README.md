@@ -57,12 +57,6 @@ memory:
   provider: metronix
 ```
 
-Or per-session:
-
-```bash
-hermes chat --memory-provider metronix
-```
-
 ## Plugin config
 
 The plugin reads non-secret config from:
