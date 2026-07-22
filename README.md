@@ -42,30 +42,60 @@ Hermes discovers user-installed memory providers from:
 
 - `~/.hermes/plugins/<name>/__init__.py`
 
-## Install for Hermes
+## Install
 
-Install the repository into your Hermes plugin directory:
+Requires Hermes and Python 3. Choose one option. Both use the same secure,
+interactive setup command.
+
+### Option 1: install script
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mtrnix/hermes-memory-metronix/main/scripts/install-plugin.sh | bash
+```
+
+The script installs the latest `main` branch, then starts
+`hermes-metronix-setup`.
+
+### Option 2: PyPI
+
+```bash
+python3 -m pip install --upgrade "hermes-memory-metronix>=0.1.3"
+hermes-metronix-setup
+```
+
+The setup command prompts for your Metronix base URL, workspace ID, and a REST
+JWT or personal API key. It copies the provider to
+`~/.hermes/plugins/metronix`, writes non-secret settings to
+`~/.hermes/metronix.json`, stores the token in `~/.hermes/.env` with `0600`
+permissions, and runs `hermes memory setup metronix`.
+
+It never prints the token. Save the original token in a password manager and
+rotate it if it is exposed. Do not use `METRONIX_MCP_API_KEY`: it is for MCP,
+not the REST API used by this provider.
+
+### Hermes plugin manager
+
+Alternatively, install this repository directly with Hermes:
 
 ```bash
 hermes plugins install mtrnix/hermes-memory-metronix --no-enable
 ```
 
-Then set Hermes to use it:
+### Quick smoke test
 
-```yaml
-memory:
-  provider: metronix
-```
+1. Run `hermes memory status`; it should show `Provider: metronix`.
+2. Run `hermes chat`—there is no `--memory-provider` chat flag—and enter:
 
-## Python distribution
+   ```text
+   Remember that my test marker is hermes-metronix-001.
+   ```
 
-`pip install hermes-memory-metronix` distributes the adapter for development
-and Hermes-hosted environments. It does not register the provider with Hermes.
-For Hermes discovery, install this GitHub plugin with:
+3. Start a fresh `hermes chat` session and ask for the test marker. A pass
+   includes `hermes-metronix-001` in the answer.
 
-```bash
-hermes plugins install mtrnix/hermes-memory-metronix --no-enable
-```
+`hermes memory status` may display unused secret fields as “Missing”. The
+provider accepts either `METRONIX_AUTH_TOKEN`, or both `METRONIX_EMAIL` and
+`METRONIX_PASSWORD`.
 
 ## Plugin config
 

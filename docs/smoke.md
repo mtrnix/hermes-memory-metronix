@@ -1,11 +1,14 @@
 # Hermes Smoke
 
-## Environment
+## Quick setup
 
-- `METRONIX_BASE_URL`
-- `METRONIX_WORKSPACE_ID`
-- `METRONIX_AUTH_TOKEN`
-- optional `METRONIX_AGENT_ID`
+```bash
+python3 -m pip install --upgrade "hermes-memory-metronix>=0.1.3"
+hermes-metronix-setup
+```
+
+The setup command stores a REST JWT or personal API key securely. Do not use
+`METRONIX_MCP_API_KEY` for the provider.
 
 ## Verify plugin
 
@@ -24,10 +27,6 @@ RUN_INTEGRATION_TESTS=1 uv run --extra dev pytest tests/integration/test_live_me
      tests/unit/test_real_abc_contract.py tests/unit/test_hermes_plugin.py -v
    ```
 
-2. Install the plugin into `~/.hermes/plugins/metronix`.
-3. Export Metronix REST credentials (`METRONIX_AUTH_TOKEN`, or email and
-   password) in the Hermes shell. Do not use `METRONIX_MCP_API_KEY` here.
-4. Run `hermes chat --memory-provider metronix`.
-5. Ask one question that should retrieve prior memory.
-6. Ask a second question that should write new memory.
-7. Verify the memory was written back under the active Hermes agent id.
+2. Run `hermes memory status` and confirm it shows `Provider: metronix`.
+3. Run `hermes chat`, store a unique fact, then start a fresh chat session.
+4. Ask for that fact and verify it is retrieved.

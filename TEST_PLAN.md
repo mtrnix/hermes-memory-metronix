@@ -266,15 +266,13 @@ Cases:
 
 ### Setup
 
-1. Copy plugin into `~/.hermes/plugins/metronix`.
-2. Create `$HERMES_HOME/metronix.json`.
-3. Set `memory.provider: metronix` or run `hermes chat --memory-provider metronix`.
+1. Run `hermes-metronix-setup`.
+2. Confirm `hermes memory status` shows `Provider: metronix`.
 
 ### Scenario A: discovery
 
 Expected:
 
-- `hermes memory providers` lists `metronix`
 - `hermes memory status` shows `metronix` as selected when configured
 
 ### Scenario B: prefetch injection
@@ -346,8 +344,8 @@ RUN_INTEGRATION_TESTS=1 pytest standalone/hermes-memory-metronix/tests/integrati
 Manual smoke:
 
 ```bash
-cp -R standalone/hermes-memory-metronix/plugin/metronix ~/.hermes/plugins/metronix
-hermes chat --memory-provider metronix
+hermes-metronix-setup
+hermes chat
 ```
 
 ## Exit Criteria
