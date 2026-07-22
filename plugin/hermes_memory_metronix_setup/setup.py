@@ -13,6 +13,9 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 
+CurlRunner = Callable[[list[str], str], subprocess.CompletedProcess[str]]
+
+
 def packaged_plugin_dir() -> Path:
     """Return the provider package bundled in the installed distribution."""
     return Path(__file__).resolve().parent.parent / "metronix"
@@ -88,6 +91,99 @@ def _upsert_env_value(content: str, key: str, value: str) -> str:
     return "\n".join(result) + "\n"
 
 
+def _run_curl(command: list[str], payload: str) -> subprocess.CompletedProcess[str]:
+    """Run curl without placing request data in the process argument list."""
+    return subprocess.run(
+        command,
+        input=payload,
+        capture_output=True,
+        check=True,
+        text=True,
+    )
+
+
+def _curl_request(
+    config: str,
+    payload: str,
+    *,
+    run_curl: CurlRunner,
+) -> subprocess.CompletedProcess[str]:
+    """Run curl with request secrets kept in a temporary owner-only config file."""
+    descriptor, temporary_name = tempfile.mkstemp(prefix=".metronix-curl-", text=True)
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(config)
+        os.chmod(temporary_path, 0o600)
+        command = [
+            "curl",
+            "--fail-with-body",
+            "--silent",
+            "--show-error",
+            "--config",
+            str(temporary_path),
+        ]
+        if payload:
+            command.extend(["--data-binary", "@-"])
+        return run_curl(command, payload)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
+def _required_response_value(payload: str, key: str) -> str:
+    """Read a required single-line string value from a JSON API response."""
+    try:
+        response = json.loads(payload)
+    except json.JSONDecodeError as error:
+        raise ValueError("Metronix returned an invalid JSON response") from error
+    if not isinstance(response, dict):
+        raise ValueError("Metronix returned an invalid JSON response")
+    value = response.get(key)
+    if not isinstance(value, str):
+        raise ValueError(f"Metronix response is missing {key}")
+    return _require_single_line(value, key)
+
+
+def create_rest_token_with_curl(
+    base_url: str,
+    *,
+    email: str,
+    password: str,
+    run_curl: CurlRunner = _run_curl,
+) -> str:
+    """Create a Metronix personal REST key using curl without printing it."""
+    base_url = _require_single_line(base_url, "base URL").rstrip("/")
+    email = _require_single_line(email, "email")
+    password = _require_single_line(password, "password")
+
+    login_response = _curl_request(
+        "".join(
+            [
+                f"url = {json.dumps(f'{base_url}/api/v1/auth/login')}\n",
+                'request = "POST"\n',
+                f"header = {json.dumps('Content-Type: application/json')}\n",
+            ]
+        ),
+        json.dumps({"email": email, "password": password}, separators=(",", ":")),
+        run_curl=run_curl,
+    )
+    login_token = _required_response_value(login_response.stdout, "token")
+    user_id = _required_response_value(login_response.stdout, "user_id")
+
+    key_response = _curl_request(
+        "".join(
+            [
+                f"url = {json.dumps(f'{base_url}/api/v1/users/{user_id}/api-keys')}\n",
+                'request = "POST"\n',
+                f"header = {json.dumps(f'Authorization: Bearer {login_token}')}\n",
+            ]
+        ),
+        "",
+        run_curl=run_curl,
+    )
+    return _required_response_value(key_response.stdout, "raw_key")
+
+
 def write_configuration(
     hermes_home: Path,
     *,
@@ -129,6 +225,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         action="store_true",
         help="replace an existing ~/.hermes/plugins/metronix installation",
     )
+    parser.add_argument(
+        "--generate-token",
+        action="store_true",
+        help="create a REST token with curl using a Metronix email and password",
+    )
     return parser.parse_args(argv)
 
 
@@ -136,18 +237,36 @@ def main(
     argv: Sequence[str] | None = None,
     *,
     run_command: Callable[[list[str]], object] | None = None,
+    run_curl: CurlRunner = _run_curl,
     input_func: Callable[[str], str] = input,
     secret_func: Callable[[str], str] = getpass.getpass,
 ) -> int:
-    """Install the provider, collect an existing REST token, and activate it."""
+    """Install the provider, collect or create a REST token, and activate it."""
     args = _parse_args(argv)
     hermes_home = args.hermes_home.expanduser()
 
     print("Metronix needs a REST JWT or personal API key for /api/v1/*.")
     print("Do not enter METRONIX_MCP_API_KEY here. The token will not be displayed.")
+    if args.generate_token:
+        print("Setup will use curl to create a personal REST API key from your Metronix login.")
     base_url = input_func("Metronix base URL: ")
     workspace_id = input_func("Metronix workspace ID: ")
-    auth_token = secret_func("Metronix REST token: ")
+
+    try:
+        if args.generate_token:
+            email = input_func("Metronix email: ")
+            password = secret_func("Metronix password: ")
+            auth_token = create_rest_token_with_curl(
+                base_url,
+                email=email,
+                password=password,
+                run_curl=run_curl,
+            )
+        else:
+            auth_token = secret_func("Metronix REST token: ")
+    except (OSError, subprocess.CalledProcessError, ValueError):
+        print("Setup did not complete: could not create a Metronix REST token.")
+        return 1
 
     try:
         install_plugin(packaged_plugin_dir(), hermes_home / "plugins" / "metronix", force=args.force)

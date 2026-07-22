@@ -10,3 +10,5 @@ build/
 .worktrees/
 .ruff_cache/
 .env
+docs/superpowers/
+.superpowers/

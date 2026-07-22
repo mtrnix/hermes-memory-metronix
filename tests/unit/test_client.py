@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from metronix.client import MetronixClient as PluginMetronixClient
+from metronix.client import MetronixClient
 
 
 class _Response:
@@ -17,7 +17,7 @@ class _Response:
         return self._payload
 
 
-def test_plugin_request_appends_workspace_and_bearer_header(monkeypatch):
+def test_request_appends_workspace_and_bearer_header(monkeypatch):
     seen: dict[str, object] = {}
 
     def fake_request(method, url, headers=None, timeout=None, **kwargs):
@@ -28,7 +28,7 @@ def test_plugin_request_appends_workspace_and_bearer_header(monkeypatch):
         seen["timeout"] = timeout
         return _Response({"results": []})
 
-    client = PluginMetronixClient(
+    client = MetronixClient(
         base_url="http://localhost:8000",
         workspace_id="MTRNIX",
         auth_token="token-123",
@@ -42,7 +42,7 @@ def test_plugin_request_appends_workspace_and_bearer_header(monkeypatch):
     assert seen["headers"]["Authorization"] == "Bearer token-123"
 
 
-def test_plugin_login_fallback_caches_token(monkeypatch):
+def test_login_fallback_caches_token(monkeypatch):
     login_calls: list[object] = []
     request_calls: list[object] = []
 
@@ -55,7 +55,7 @@ def test_plugin_login_fallback_caches_token(monkeypatch):
         request_calls.append((method, url, headers, timeout))
         return _Response({"status": "ok"})
 
-    client = PluginMetronixClient(
+    client = MetronixClient(
         base_url="http://localhost:8000",
         workspace_id="MTRNIX",
         email="admin@example.com",
@@ -72,7 +72,7 @@ def test_plugin_login_fallback_caches_token(monkeypatch):
     assert request_calls[0][2]["Authorization"] == "Bearer jwt-abc"
 
 
-def test_plugin_request_retries_with_login_on_401(monkeypatch):
+def test_request_retries_with_login_on_401(monkeypatch):
     login_calls: list[object] = []
     request_calls: list[object] = []
 
@@ -87,7 +87,7 @@ def test_plugin_request_retries_with_login_on_401(monkeypatch):
             return _Response({"detail": "unauthorized"}, status_code=401)
         return _Response({"status": "ok"})
 
-    client = PluginMetronixClient(
+    client = MetronixClient(
         base_url="http://localhost:8000",
         workspace_id="MTRNIX",
         auth_token="mcp-token-not-rest-token",
@@ -106,7 +106,7 @@ def test_plugin_request_retries_with_login_on_401(monkeypatch):
     assert request_calls[1][2]["Authorization"] == "Bearer jwt-fresh"
 
 
-def test_plugin_store_document_posts_expected_payload(monkeypatch):
+def test_store_document_posts_expected_payload(monkeypatch):
     seen: dict[str, object] = {}
 
     def fake_request(method, url, headers=None, timeout=None, **kwargs):
@@ -116,7 +116,7 @@ def test_plugin_store_document_posts_expected_payload(monkeypatch):
         seen["json"] = kwargs.get("json")
         return _Response({"success": True, "doc_label": "hermes-wiki-abc123", "chunks_stored": 2})
 
-    client = PluginMetronixClient(
+    client = MetronixClient(
         base_url="http://localhost:8000",
         workspace_id="MTRNIX",
         auth_token="token-123",

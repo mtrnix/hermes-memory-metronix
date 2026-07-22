@@ -23,3 +23,8 @@ jobs:
         env:
           HERMES_AGENT_SRC: ${{ github.workspace }}/.hermes-agent
         run: uv run --extra dev pytest tests/unit -q
+      - name: Build and validate distribution artifacts
+        run: |
+          uv build
+          uv run --with twine twine check dist/*
+          python -c 'from pathlib import Path; files = list(Path("dist").glob("*.whl")) + list(Path("dist").glob("*.tar.gz")); assert len(files) == 2, files'

@@ -33,7 +33,8 @@ What is intentionally still conservative:
 
 ## Layout
 
-The installable Hermes plugin lives in:
+The installable Hermes plugin is this repository root. Its provider
+implementation lives in:
 
 - `plugin/metronix/`
 
@@ -41,21 +42,63 @@ Hermes discovers user-installed memory providers from:
 
 - `~/.hermes/plugins/<name>/__init__.py`
 
-## Local install for Hermes
+## Install
 
-Copy the plugin directory into your Hermes home:
+Requires Hermes and Python 3. Choose one option. Both use the same secure,
+interactive setup command.
+
+### Option 1: install script
 
 ```bash
-mkdir -p ~/.hermes/plugins
-cp -R plugin/metronix ~/.hermes/plugins/metronix
+curl -fsSL https://raw.githubusercontent.com/mtrnix/hermes-memory-metronix/main/scripts/install-plugin.sh | bash
 ```
 
-Then set Hermes to use it:
+The script installs the latest `main` branch, then starts
+`hermes-metronix-setup`.
 
-```yaml
-memory:
-  provider: metronix
+### Option 2: PyPI
+
+```bash
+uv tool install "hermes-memory-metronix>=0.1.3"
+hermes-metronix-setup --generate-token
 ```
+
+`--generate-token` prompts for your Metronix email and password, then uses
+`curl` to create a personal REST API key without printing it. If you already
+have a REST JWT or personal API key, omit the flag and paste that token instead.
+
+The setup command copies the provider to
+`~/.hermes/plugins/metronix`, writes non-secret settings to
+`~/.hermes/metronix.json`, stores the token in `~/.hermes/.env` with `0600`
+permissions, and runs `hermes memory setup metronix`.
+
+It never prints the token. Save the original token in a password manager and
+rotate it if it is exposed. Do not use `METRONIX_MCP_API_KEY`: it is for MCP,
+not the REST API used by this provider.
+
+### Hermes plugin manager
+
+Alternatively, install this repository directly with Hermes:
+
+```bash
+hermes plugins install mtrnix/hermes-memory-metronix --no-enable
+```
+
+### Quick smoke test
+
+1. Run `hermes memory status`; it should show `Provider: metronix`.
+2. Run `hermes chat`—there is no `--memory-provider` chat flag—and enter:
+
+   ```text
+   Remember that my test marker is hermes-metronix-001.
+   ```
+
+3. Start a fresh `hermes chat` session and ask for the test marker. A pass
+   includes `hermes-metronix-001` in the answer.
+
+`hermes memory status` may display unused secret fields as “Missing”. The
+provider accepts either `METRONIX_AUTH_TOKEN`, or both `METRONIX_EMAIL` and
+`METRONIX_PASSWORD`.
 
 ## Plugin config
 
