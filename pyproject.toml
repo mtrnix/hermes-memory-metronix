@@ -15,6 +15,9 @@ dependencies = [
     "pyyaml>=6,<7",
 ]
 
+[project.scripts]
+hermes-metronix-setup = "hermes_memory_metronix_setup.setup:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=9,<10",
