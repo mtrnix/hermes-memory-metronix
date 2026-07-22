@@ -2,16 +2,12 @@
 
 ## Quick setup
 
-Install and configure the provider first:
-
 ```bash
 python3 -m pip install --upgrade "hermes-memory-metronix>=0.1.3"
 hermes-metronix-setup
 ```
 
-Until v0.1.3 is published, use the repository install script from the README.
-
-The setup command securely stores a REST JWT or personal API key. Do not use
+The setup command stores a REST JWT or personal API key securely. Do not use
 `METRONIX_MCP_API_KEY` for the provider.
 
 ## Verify plugin
@@ -32,6 +28,5 @@ RUN_INTEGRATION_TESTS=1 uv run --extra dev pytest tests/integration/test_live_me
    ```
 
 2. Run `hermes memory status` and confirm it shows `Provider: metronix`.
-3. Run `hermes chat`.
-4. Store a unique fact, exit, and start a fresh `hermes chat` session.
-5. Ask for that fact and verify that it is retrieved.
+3. Run `hermes chat`, store a unique fact, then start a fresh chat session.
+4. Ask for that fact and verify it is retrieved.

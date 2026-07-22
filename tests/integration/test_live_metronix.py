@@ -8,7 +8,7 @@ from metronix.client import MetronixClient
 
 
 @pytest.mark.integration
-def test_live_store_search_delete_smoke() -> None:
+def test_live_search_smoke() -> None:
     if not os.environ.get("RUN_INTEGRATION_TESTS"):
         pytest.skip("set RUN_INTEGRATION_TESTS=1 for live Metronix verification")
 
