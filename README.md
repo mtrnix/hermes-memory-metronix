@@ -59,12 +59,15 @@ The script installs the latest `main` branch, then starts
 ### Option 2: PyPI
 
 ```bash
-python3 -m pip install --upgrade "hermes-memory-metronix>=0.1.3"
-hermes-metronix-setup
+uv tool install "hermes-memory-metronix>=0.1.3"
+hermes-metronix-setup --generate-token
 ```
 
-The setup command prompts for your Metronix base URL, workspace ID, and a REST
-JWT or personal API key. It copies the provider to
+`--generate-token` prompts for your Metronix email and password, then uses
+`curl` to create a personal REST API key without printing it. If you already
+have a REST JWT or personal API key, omit the flag and paste that token instead.
+
+The setup command copies the provider to
 `~/.hermes/plugins/metronix`, writes non-secret settings to
 `~/.hermes/metronix.json`, stores the token in `~/.hermes/.env` with `0600`
 permissions, and runs `hermes memory setup metronix`.
