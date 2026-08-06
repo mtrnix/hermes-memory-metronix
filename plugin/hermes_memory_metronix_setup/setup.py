@@ -245,7 +245,7 @@ def main(
     args = _parse_args(argv)
     hermes_home = args.hermes_home.expanduser()
 
-    print("Metronix needs a REST JWT or personal API key for /api/v1/*.")
+    print("Metronix needs a REST JWT or mtk_ personal key for /api/v1/*.")
     print("Do not enter METRONIX_MCP_API_KEY here. The token will not be displayed.")
     if args.generate_token:
         print("Setup will use curl to create a personal REST API key from your Metronix login.")

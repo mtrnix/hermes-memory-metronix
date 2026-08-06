@@ -7,8 +7,9 @@ python3 -m pip install --upgrade "hermes-memory-metronix>=0.1.3"
 hermes-metronix-setup
 ```
 
-The setup command stores a REST JWT or personal API key securely. Do not use
-`METRONIX_MCP_API_KEY` for the provider.
+The setup command stores a REST JWT or `mtk_…` personal key securely.
+`mtk_…` keys require Metronix core's shared REST authentication resolver. Do
+not use `METRONIX_MCP_API_KEY` for the provider.
 
 ## Verify plugin
 

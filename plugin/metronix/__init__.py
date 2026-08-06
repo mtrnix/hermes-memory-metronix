@@ -72,7 +72,7 @@ class MetronixMemoryProvider(MemoryProvider):
         return [
             {"key": "base_url", "description": "Metronix base URL", "required": True},
             {"key": "workspace_id", "description": "Metronix workspace id", "required": True},
-            {"key": "auth_token", "description": "Metronix bearer token", "secret": True, "env_var": "METRONIX_AUTH_TOKEN"},
+            {"key": "auth_token", "description": "Metronix REST JWT or mtk_ personal key", "secret": True, "env_var": "METRONIX_AUTH_TOKEN"},
             {"key": "email", "description": "Metronix login email"},
             {"key": "password", "description": "Metronix login password", "secret": True, "env_var": "METRONIX_PASSWORD"},
             {"key": "agent_id", "description": "Stable Hermes agent id", "default": "hermes"},
