@@ -22,7 +22,7 @@ What it already does:
 - Prefetches relevant Metronix memory records before a turn
 - Mirrors Hermes `memory(action="add")` writes into Metronix
 - Optionally writes completed turns as session-scoped Metronix memory
-- Supports bearer-token auth, with email/password login fallback
+- Supports REST JWT or `mtk_…` personal-key auth, with email/password login fallback
 
 What is intentionally still conservative:
 
@@ -94,7 +94,7 @@ Example `metronix.json`:
 Secrets:
 
 ```bash
-METRONIX_AUTH_TOKEN=...
+METRONIX_AUTH_TOKEN=<REST JWT or mtk_ personal key>
 # or:
 METRONIX_EMAIL=admin@metronix.local
 METRONIX_PASSWORD=...
@@ -102,7 +102,9 @@ METRONIX_PASSWORD=...
 
 Important:
 
-- `METRONIX_AUTH_TOKEN` must be a REST JWT or personal API key for `/api/v1/*`
+- `METRONIX_AUTH_TOKEN` must be a REST JWT or `mtk_…` personal key for
+  `/api/v1/*`. `mtk_…` keys require Metronix core's shared REST authentication
+  resolver.
 - `METRONIX_MCP_API_KEY` is for `/mcp`, not `/api/v1/memory/*`
 - if you provide both a bearer token and login credentials, the client will
   retry once with a fresh login JWT when the original bearer gets a `401`
@@ -149,8 +151,9 @@ default, only `raw/`, `entities/`, `concepts/`, `comparisons/`, and
 `_archive/**` are skipped (pass `--include-archive` to include archived
 pages instead).
 
-Requires `METRONIX_AUTH_TOKEN` to be a REST JWT or personal API key for
-`/api/v1/*`, not `METRONIX_MCP_API_KEY`, which is for `/mcp` only.
+Requires `METRONIX_AUTH_TOKEN` to be a REST JWT or `mtk_…` personal key for
+`/api/v1/*`, not `METRONIX_MCP_API_KEY`, which is for `/mcp` only. `mtk_…`
+keys require Metronix core's shared REST authentication resolver.
 
 ## Development
 

@@ -17,7 +17,7 @@ class _Response:
         return self._payload
 
 
-def test_plugin_request_appends_workspace_and_bearer_header(monkeypatch):
+def test_plugin_forwards_personal_key_to_core_rest_resolver(monkeypatch):
     seen: dict[str, object] = {}
 
     def fake_request(method, url, headers=None, timeout=None, **kwargs):
@@ -31,7 +31,7 @@ def test_plugin_request_appends_workspace_and_bearer_header(monkeypatch):
     client = PluginMetronixClient(
         base_url="http://localhost:8000",
         workspace_id="MTRNIX",
-        auth_token="token-123",
+        auth_token="mtk_personal-key",
     )
     monkeypatch.setattr(client._session, "request", fake_request)
 
@@ -39,7 +39,7 @@ def test_plugin_request_appends_workspace_and_bearer_header(monkeypatch):
 
     assert seen["method"] == "POST"
     assert seen["url"] == "http://localhost:8000/api/v1/memory/search?workspace_id=MTRNIX"
-    assert seen["headers"]["Authorization"] == "Bearer token-123"
+    assert seen["headers"]["Authorization"] == "Bearer mtk_personal-key"
 
 
 def test_plugin_login_fallback_caches_token(monkeypatch):

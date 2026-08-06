@@ -143,7 +143,7 @@ def main(
     args = _parse_args(argv)
     hermes_home = args.hermes_home.expanduser()
 
-    print("Metronix needs a REST JWT or personal API key for /api/v1/*.")
+    print("Metronix needs a REST JWT or mtk_ personal key for /api/v1/*.")
     print("Do not enter METRONIX_MCP_API_KEY here. The token will not be displayed.")
     base_url = input_func("Metronix base URL: ")
     workspace_id = input_func("Metronix workspace ID: ")

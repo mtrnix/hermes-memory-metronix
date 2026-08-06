@@ -24,6 +24,16 @@ def test_is_available_true_with_token(monkeypatch, tmp_path: Path):
     assert provider.is_available() is True
 
 
+def test_auth_token_schema_names_jwt_and_personal_key() -> None:
+    provider = MetronixMemoryProvider()
+
+    auth_token = next(
+        field for field in provider.get_config_schema() if field["key"] == "auth_token"
+    )
+
+    assert auth_token["description"] == "Metronix REST JWT or mtk_ personal key"
+
+
 def test_is_available_true_with_login(monkeypatch, tmp_path: Path):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("METRONIX_BASE_URL", "http://localhost:8000")

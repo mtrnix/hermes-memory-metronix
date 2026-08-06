@@ -4,7 +4,7 @@
 
 - `METRONIX_BASE_URL`
 - `METRONIX_WORKSPACE_ID`
-- `METRONIX_AUTH_TOKEN`
+- `METRONIX_AUTH_TOKEN` (a REST JWT or `mtk_…` personal key)
 - optional `METRONIX_AGENT_ID`
 
 ## Verify plugin
@@ -25,8 +25,10 @@ RUN_INTEGRATION_TESTS=1 uv run --extra dev pytest tests/integration/test_live_me
    ```
 
 2. Install the plugin into `~/.hermes/plugins/metronix`.
-3. Export Metronix REST credentials (`METRONIX_AUTH_TOKEN`, or email and
-   password) in the Hermes shell. Do not use `METRONIX_MCP_API_KEY` here.
+3. Export Metronix REST credentials (`METRONIX_AUTH_TOKEN`, containing a REST
+   JWT or `mtk_…` personal key, or email and password) in the Hermes shell.
+   `mtk_…` keys require Metronix core's shared REST authentication resolver.
+   Do not use `METRONIX_MCP_API_KEY` here.
 4. Run `hermes chat --memory-provider metronix`.
 5. Ask one question that should retrieve prior memory.
 6. Ask a second question that should write new memory.
