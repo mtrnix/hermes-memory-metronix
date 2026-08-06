@@ -67,6 +67,42 @@ def test_configure_rejects_multiline_secret(tmp_path: Path) -> None:
         )
 
 
+def test_create_rest_token_uses_curl_without_exposing_credentials() -> None:
+    commands: list[tuple[list[str], str]] = []
+    curl_configs: list[str] = []
+    responses = iter(
+        [
+            '{"token":"login-jwt","user_id":"user-123"}',
+            '{"raw_key":"mtk_generated_token"}',
+        ]
+    )
+
+    def run_curl(command: list[str], payload: str) -> subprocess.CompletedProcess[str]:
+        commands.append((command, payload))
+        config_path = Path(command[command.index("--config") + 1])
+        curl_configs.append(config_path.read_text(encoding="utf-8"))
+        return subprocess.CompletedProcess(command, 0, next(responses), "")
+
+    token = setup.create_rest_token_with_curl(
+        "https://memory.example/",
+        email="demo@example.com",
+        password="correct-horse-battery-staple",
+        run_curl=run_curl,
+    )
+
+    assert token == "mtk_generated_token"
+    assert [payload for _, payload in commands] == [
+        '{"email":"demo@example.com","password":"correct-horse-battery-staple"}',
+        "",
+    ]
+    assert all("correct-horse-battery-staple" not in part for command, _ in commands for part in command)
+    assert all("login-jwt" not in part for command, _ in commands for part in command)
+    assert curl_configs == [
+        'url = "https://memory.example/api/v1/auth/login"\nrequest = "POST"\nheader = "Content-Type: application/json"\n',
+        'url = "https://memory.example/api/v1/users/user-123/api-keys"\nrequest = "POST"\nheader = "Authorization: Bearer login-jwt"\n',
+    ]
+
+
 def test_main_activates_provider_after_persisting_configuration(
     monkeypatch,
     tmp_path: Path,
@@ -88,6 +124,41 @@ def test_main_activates_provider_after_persisting_configuration(
 
     assert exit_code == 0
     assert commands == [["hermes", "memory", "setup", "metronix"]]
+
+
+def test_main_generates_and_persists_a_rest_token_with_curl(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    source = _source_plugin(tmp_path)
+    answers = iter(["https://memory.example", "TEST", "demo@example.com"])
+    curl_payloads: list[str] = []
+    responses = iter(
+        [
+            '{"token":"login-jwt","user_id":"user-123"}',
+            '{"raw_key":"mtk_generated_token"}',
+        ]
+    )
+    monkeypatch.setattr(setup, "packaged_plugin_dir", lambda: source)
+
+    def run_curl(command: list[str], payload: str) -> subprocess.CompletedProcess[str]:
+        curl_payloads.append(payload)
+        return subprocess.CompletedProcess(command, 0, next(responses), "")
+
+    hermes_home = tmp_path / ".hermes"
+    exit_code = setup.main(
+        ["--hermes-home", str(hermes_home), "--generate-token"],
+        run_command=lambda command: None,
+        run_curl=run_curl,
+        input_func=lambda prompt: next(answers),
+        secret_func=lambda prompt: "demo-password",
+    )
+
+    assert exit_code == 0
+    assert curl_payloads == ['{"email":"demo@example.com","password":"demo-password"}', ""]
+    assert (hermes_home / ".env").read_text(encoding="utf-8") == (
+        "METRONIX_AUTH_TOKEN=mtk_generated_token\n"
+    )
 
 
 def test_setup_helper_imports_without_hermes_agent() -> None:

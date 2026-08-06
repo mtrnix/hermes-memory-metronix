@@ -12,3 +12,5 @@ build/
 docs/superpowers/
 .ruff_cache/
 .env
+docs/superpowers/
+.superpowers/
