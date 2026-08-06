@@ -59,7 +59,7 @@ The script installs the latest `main` branch, then starts
 ### Option 2: PyPI
 
 ```bash
-uv tool install "hermes-memory-metronix>=0.1.3"
+uv tool install "hermes-memory-metronix>=2026.28.1"
 hermes-metronix-setup --generate-token
 ```
 
@@ -75,6 +75,18 @@ permissions, and runs `hermes memory setup metronix`.
 It never prints the token. Save the original token in a password manager and
 rotate it if it is exposed. Do not use `METRONIX_MCP_API_KEY`: it is for MCP,
 not the REST API used by this provider.
+
+### Release versioning
+
+Public PyPI releases use `YYYY.WW.REVISION`: the calendar year and ISO week in
+which this branch was created, followed by an incrementing revision. This
+branch began in ISO week 28 of 2026, so its first public release is
+`2026.28.1`.
+
+The matching GitHub release tag, for example `v2026.28.1`, points to the
+release commit; that commit hash is the precise build identifier. Private
+builds may append the hash as a PEP 440 local version, such as
+`2026.28.1+gabc1234`, but local versions are not published to PyPI.
 
 ### Hermes plugin manager
 
