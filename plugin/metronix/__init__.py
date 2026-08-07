@@ -137,11 +137,10 @@ class MetronixMemoryProvider(MemoryProvider):
 
         def _fetch() -> None:
             try:
-                agent_filter = self._agent_id if self._read_scope() == "per_agent" else None
                 results = self._client.search_memory(
                     query=query,
                     top_k=int(self._config.get("prefetch_top_k", 8) or 8),
-                    agent_id=agent_filter,
+                    agent_id=self._agent_id,
                 )
                 kinds = {str(k).strip().lower() for k in self._config.get("prefetch_types", []) or []}
                 filtered = [r for r in results if self._keep_prefetch_result(r, kinds)]

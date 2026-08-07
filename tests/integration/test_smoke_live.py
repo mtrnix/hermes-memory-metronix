@@ -12,6 +12,11 @@ from metronix.client import MetronixClient
 pytestmark = pytest.mark.integration
 
 
+class LiveConfig(dict[str, str]):
+    def __repr__(self) -> str:
+        return "LiveConfig(<redacted>)"
+
+
 class InlineThread:
     def __init__(self, target=None, daemon=None, name=None):
         self._target = target
@@ -26,7 +31,7 @@ def _integration_enabled() -> bool:
 
 
 @pytest.fixture
-def live_config_or_skip(monkeypatch, tmp_path: Path) -> dict[str, str]:
+def live_config_or_skip(monkeypatch, tmp_path: Path) -> LiveConfig:
     if not _integration_enabled():
         pytest.skip("integration smoke requires RUN_INTEGRATION_TESTS=1")
 
@@ -48,14 +53,14 @@ def live_config_or_skip(monkeypatch, tmp_path: Path) -> dict[str, str]:
     hermes_home.mkdir(parents=True)
     monkeypatch.setattr("metronix._get_hermes_home", lambda: hermes_home)
 
-    return {
+    return LiveConfig({
         "base_url": base_url,
         "workspace_id": workspace_id,
         "auth_token": auth_token,
         "email": email,
         "password": password,
         "hermes_home": str(hermes_home),
-    }
+    })
 
 
 def test_live_ping_smoke(live_config_or_skip: dict[str, str]) -> None:
@@ -121,9 +126,10 @@ def test_live_provider_write_and_prefetch_smoke(
         record = matching[0]["record"]
         record_id = str(record["id"])
 
+        provider.queue_prefetch(unique)
         prefetched = provider.prefetch(unique)
         assert "<memory-context>" in prefetched
         assert content in prefetched
     finally:
         if record_id:
-            client.delete_memory(record_id)
+            client.delete_memory(record_id, agent_id="smoke-agent")

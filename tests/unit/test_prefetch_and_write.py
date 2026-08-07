@@ -64,6 +64,27 @@ def test_queue_prefetch_skips_whitespace_only_query(monkeypatch):
     assert search_calls == []
 
 
+def test_queue_prefetch_includes_agent_identity_for_workspace_reads(monkeypatch):
+    provider = MetronixMemoryProvider()
+    provider._config = {"prefetch": True, "write_scope": "workspace"}
+    provider._agent_id = "hermes"
+    search_calls: list[dict] = []
+
+    class FakeClient:
+        def search_memory(self, **kwargs):
+            search_calls.append(kwargs)
+            return []
+
+    provider._client = FakeClient()
+    monkeypatch.setattr("metronix.threading.Thread", InlineThread)
+
+    provider.queue_prefetch("terminal theme")
+
+    assert search_calls == [
+        {"query": "terminal theme", "top_k": 8, "agent_id": "hermes"}
+    ]
+
+
 def test_on_memory_write_posts_expected_payload(monkeypatch):
     provider = MetronixMemoryProvider()
     provider._config = {"write_through": True, "write_scope": "workspace"}
