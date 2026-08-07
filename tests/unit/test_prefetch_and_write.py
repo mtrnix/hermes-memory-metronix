@@ -46,6 +46,24 @@ def test_queue_prefetch_populates_cache_and_prefetch_reads_it(monkeypatch):
     assert "ignore me" not in result
 
 
+def test_queue_prefetch_skips_whitespace_only_query(monkeypatch):
+    provider = MetronixMemoryProvider()
+    provider._config = {"prefetch": True}
+    search_calls: list[dict] = []
+
+    class FakeClient:
+        def search_memory(self, **kwargs):
+            search_calls.append(kwargs)
+            return []
+
+    provider._client = FakeClient()
+    monkeypatch.setattr("metronix.threading.Thread", InlineThread)
+
+    provider.queue_prefetch(" \t\n ")
+
+    assert search_calls == []
+
+
 def test_on_memory_write_posts_expected_payload(monkeypatch):
     provider = MetronixMemoryProvider()
     provider._config = {"write_through": True, "write_scope": "workspace"}

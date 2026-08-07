@@ -3,7 +3,7 @@
 ## Quick setup
 
 ```bash
-python3 -m pip install --upgrade "hermes-memory-metronix>=2026.28.1"
+python3 -m pip install --upgrade "hermes-memory-metronix>=2026.28.2"
 hermes-metronix-setup
 ```
 

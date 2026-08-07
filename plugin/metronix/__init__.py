@@ -129,6 +129,8 @@ class MetronixMemoryProvider(MemoryProvider):
             return self._prefetch_cache.get(target_session_id, "")
 
     def queue_prefetch(self, query: str, *, session_id: str = "") -> None:
+        if not query.strip():
+            return
         if not self._client or not self._config.get("prefetch", True):
             return
         target_session_id = session_id or self._session_id
