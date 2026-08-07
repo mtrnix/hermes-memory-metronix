@@ -42,6 +42,30 @@ def test_plugin_forwards_personal_key_to_core_rest_resolver(monkeypatch):
     assert seen["headers"]["Authorization"] == "Bearer mtk_personal-key"
 
 
+def test_delete_memory_includes_required_agent_id(monkeypatch):
+    seen: dict[str, object] = {}
+
+    def fake_request(method, url, headers=None, timeout=None, **kwargs):
+        del headers, timeout, kwargs
+        seen["method"] = method
+        seen["url"] = url
+        return _Response({})
+
+    client = MetronixClient(
+        base_url="http://localhost:8000",
+        workspace_id="MTRNIX",
+        auth_token="token-123",
+    )
+    monkeypatch.setattr(client._session, "request", fake_request)
+
+    client.delete_memory("memory-1", agent_id="hermes")
+
+    assert seen == {
+        "method": "DELETE",
+        "url": "http://localhost:8000/api/v1/memory/records/memory-1?workspace_id=MTRNIX&agent_id=hermes",
+    }
+
+
 def test_login_fallback_caches_token(monkeypatch):
     login_calls: list[object] = []
     request_calls: list[object] = []

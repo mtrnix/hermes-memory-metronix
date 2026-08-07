@@ -96,7 +96,7 @@ wheels = [
 
 [[package]]
 name = "hermes-memory-metronix"
-version = "2026.32.2"
+version = "2026.32.3"
 source = { editable = "." }
 dependencies = [
     { name = "pyyaml" },

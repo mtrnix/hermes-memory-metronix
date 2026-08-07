@@ -88,12 +88,23 @@ class MetronixClient:
     def ping(self) -> dict[str, Any]:
         return self._request("GET", "/api/v1/auth/me")
 
-    def delete_memory(self, record_id: str) -> None:
-        self._request("DELETE", f"/api/v1/memory/records/{record_id}")
+    def delete_memory(self, record_id: str, *, agent_id: str) -> None:
+        self._request(
+            "DELETE",
+            f"/api/v1/memory/records/{record_id}",
+            query_params={"agent_id": agent_id},
+        )
 
-    def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        query_params: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         headers = dict(kwargs.pop("headers", {}) or {})
-        query = urlencode({"workspace_id": self._workspace_id})
+        query = urlencode({"workspace_id": self._workspace_id, **(query_params or {})})
         url = f"{self._base_url}{path}?{query}"
         response = self._send_request(method, url, headers=headers, **kwargs)
         if response.status_code == 401 and self._email and self._password:
