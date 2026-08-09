@@ -63,6 +63,17 @@ Or per-session:
 hermes chat --memory-provider metronix
 ```
 
+## Uninstall
+
+Remove the installed plugin directory:
+
+```bash
+rm -rf ~/.hermes/plugins/metronix
+```
+
+Then remove or change the `memory.provider: metronix` setting in your Hermes
+configuration before starting a new session.
+
 ## Plugin config
 
 The plugin reads non-secret config from:
