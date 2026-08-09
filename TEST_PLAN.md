@@ -1,6 +1,6 @@
 # Test Plan
 
-Test plan for the standalone `hermes-memory-metronix` plugin scaffold.
+Test plan for the standalone `hermes-memory-metronix` plugin.
 
 This plan is split into three layers:
 
@@ -332,13 +332,13 @@ Expected:
 Unit:
 
 ```bash
-pytest standalone/hermes-memory-metronix/tests/unit -q
+uv run --extra dev pytest tests/unit -q
 ```
 
 Integration:
 
 ```bash
-RUN_INTEGRATION_TESTS=1 pytest standalone/hermes-memory-metronix/tests/integration -q
+RUN_INTEGRATION_TESTS=1 uv run --extra dev pytest tests/integration -q
 ```
 
 Manual smoke:
