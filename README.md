@@ -14,7 +14,10 @@ Metronix backend contracts and MCP integration docs remain in the
 
 ## Status
 
-This is a scaffold, not a finished public plugin release.
+This is a released standalone plugin. The current public package is
+[`2026.32.3`](https://pypi.org/project/hermes-memory-metronix/), and the
+[native Hermes smoke video](https://www.youtube.com/watch?v=Sc6QOyD7Yek)
+shows the end-to-end provider flow.
 
 What it already does:
 
@@ -24,9 +27,8 @@ What it already does:
 - Optionally writes completed turns as session-scoped Metronix memory
 - Supports REST JWT or `mtk_…` personal-key auth, with email/password login fallback
 
-What is intentionally still conservative:
+Current scope:
 
-- No custom Hermes setup wizard yet
 - No extra provider-specific model tools yet
 - Prefetch currently targets `/api/v1/memory/search`
 - Knowledge-document / page retrieval is left as a follow-up
@@ -173,7 +175,7 @@ maps to Metronix memory kinds:
 - `preference`
 - `pinned`
 
-`page` is not wired yet because the current scaffold does not call a unified
+`page` is not wired yet because the provider does not call a unified
 knowledge-search endpoint.
 
 ## Migrating an existing llm-wiki into Metronix
