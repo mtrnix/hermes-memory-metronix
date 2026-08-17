@@ -28,3 +28,15 @@ jobs:
           uv build
           uv run --with twine twine check dist/*
           python -c 'from pathlib import Path; files = list(Path("dist").glob("*.whl")) + list(Path("dist").glob("*.tar.gz")); assert len(files) == 2, files'
+      - name: Validate installed package discovery
+        run: |
+          wheel="$(find dist -name '*.whl' -print -quit)"
+          uv run --isolated --with "$wheel" python -c 'from importlib.metadata import entry_points; matches = [ep for ep in entry_points(group="hermes_agent.memory_providers") if ep.name == "metronix"]; assert len(matches) == 1, matches; assert matches[0].value == "metronix:register"'
+      - name: Load packaged provider with current Hermes
+        run: |
+          wheel="$(find dist -name '*.whl' -print -quit)"
+          uv run --project .hermes-agent --with "$wheel" python -c 'from plugins.memory import load_memory_provider; provider = load_memory_provider("metronix"); assert provider is not None; assert provider.name == "metronix"'
+      - name: Validate with current Hermes Plugin Doctor
+        run: |
+          wheel="$(find dist -name '*.whl' -print -quit)"
+          uv run --project .hermes-agent --with "$wheel" hermes plugins doctor "$GITHUB_WORKSPACE" --ci
