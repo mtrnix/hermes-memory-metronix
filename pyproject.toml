@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hermes-memory-metronix"
-version = "2026.32.3"
+version = "2026.34.1"
 description = "Standalone Hermes memory-provider plugin scaffold for Metronix"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -27,6 +27,9 @@ Issues = "https://github.com/mtrnix/hermes-memory-metronix/issues"
 
 [project.scripts]
 hermes-metronix-setup = "hermes_memory_metronix_setup.setup:main"
+
+[project.entry-points."hermes_agent.memory_providers"]
+metronix = "metronix:register"
 
 [project.optional-dependencies]
 dev = [
