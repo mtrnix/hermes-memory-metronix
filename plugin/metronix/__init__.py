@@ -9,8 +9,9 @@ import json
 import logging
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from agent.memory_provider import MemoryProvider
 
@@ -52,6 +53,10 @@ class MetronixMemoryProvider(MemoryProvider):
         self._status_callback = None
         self._prefetch_cache: dict[str, str] = {}
         self._prefetch_lock = threading.Lock()
+        self._hermes_home: Path | None = None
+        self._worker_lock = threading.Lock()
+        self._worker: ThreadPoolExecutor | None = None
+        self._accepting_work = True
 
     @property
     def name(self) -> str:
@@ -75,19 +80,12 @@ class MetronixMemoryProvider(MemoryProvider):
             {"key": "auth_token", "description": "Metronix REST JWT or mtk_ personal key", "secret": True, "env_var": "METRONIX_AUTH_TOKEN"},
             {"key": "email", "description": "Metronix login email"},
             {"key": "password", "description": "Metronix login password", "secret": True, "env_var": "METRONIX_PASSWORD"},
-            {"key": "agent_id", "description": "Stable Hermes agent id", "default": "hermes"},
-            {"key": "prefetch", "description": "Enable Metronix prefetch injection", "default": True},
-            {"key": "prefetch_top_k", "description": "Top K prefetched memories", "default": 8},
-            {"key": "prefetch_types", "description": "Kinds to inject: fact, preference, pinned", "default": ["fact", "preference", "pinned"]},
-            {"key": "cite_sources", "description": "Include record ids in injected context", "default": True},
-            {"key": "write_through", "description": "Mirror Hermes memory writes into Metronix", "default": True},
-            {"key": "write_scope", "description": "per_agent, workspace, shared, or session", "default": "workspace"},
-            {"key": "sync_turns", "description": "Persist completed turns as session memory", "default": True},
-            {"key": "timeout_seconds", "description": "REST timeout in seconds", "default": 20},
         ]
 
     def initialize(self, session_id: str, **kwargs) -> None:
-        self._config = self._load_config()
+        supplied_home = kwargs.get("hermes_home")
+        self._hermes_home = Path(supplied_home) if supplied_home else _get_hermes_home()
+        self._config = self._load_config(self._hermes_home)
         self._session_id = session_id
         self._warning_callback = kwargs.get("warning_callback")
         self._status_callback = kwargs.get("status_callback")
@@ -150,7 +148,7 @@ class MetronixMemoryProvider(MemoryProvider):
             except Exception as exc:
                 self._warn(f"Metronix prefetch failed: {exc}")
 
-        threading.Thread(target=_fetch, daemon=True, name="metronix-queue-prefetch").start()
+        self._submit_background(_fetch)
 
     def on_session_switch(
         self,
@@ -205,7 +203,7 @@ class MetronixMemoryProvider(MemoryProvider):
             except Exception as exc:
                 self._warn(f"Metronix turn sync failed: {exc}")
 
-        threading.Thread(target=_sync, daemon=True, name="metronix-sync-turn").start()
+        self._submit_background(_sync)
 
     def on_memory_write(
         self,
@@ -233,16 +231,26 @@ class MetronixMemoryProvider(MemoryProvider):
             except Exception as exc:
                 self._warn(f"Metronix write-through failed: {exc}")
 
-        threading.Thread(target=_write, daemon=True, name="metronix-memory-write").start()
+        self._submit_background(_write)
 
     def get_tool_schemas(self):
         return []
 
     def shutdown(self) -> None:
-        return None
+        with self._worker_lock:
+            if not self._accepting_work and self._worker is None:
+                return
+            self._accepting_work = False
+            worker = self._worker
+            self._worker = None
+        if worker is not None:
+            try:
+                worker.shutdown(wait=True, cancel_futures=False)
+            except Exception as exc:
+                self._warn(f"Metronix worker shutdown failed: {exc}")
 
-    def _load_config(self) -> dict[str, Any]:
-        home = _get_hermes_home()
+    def _load_config(self, hermes_home: Path | None = None) -> dict[str, Any]:
+        home = hermes_home or self._hermes_home or _get_hermes_home()
         file_cfg = _read_json(home / "metronix.json")
         merged: dict[str, Any] = {
             "base_url": os.environ.get("METRONIX_BASE_URL", ""),
@@ -271,6 +279,17 @@ class MetronixMemoryProvider(MemoryProvider):
             if environment_value:
                 merged[config_key] = environment_value
         return merged
+
+    def _submit_background(self, callback: Callable[[], None]) -> None:
+        with self._worker_lock:
+            if not self._accepting_work:
+                return
+            if self._worker is None:
+                self._worker = ThreadPoolExecutor(
+                    max_workers=1,
+                    thread_name_prefix="metronix-worker",
+                )
+            self._worker.submit(callback)
 
     def _read_scope(self) -> str:
         write_scope = str(self._config.get("write_scope", "workspace")).strip().lower()

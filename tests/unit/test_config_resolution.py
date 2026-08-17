@@ -34,6 +34,18 @@ def test_auth_token_schema_names_jwt_and_personal_key() -> None:
     assert auth_token["description"] == "Metronix REST JWT or mtk_ personal key"
 
 
+def test_config_schema_only_prompts_for_essential_setup_fields() -> None:
+    provider = MetronixMemoryProvider()
+
+    assert [field["key"] for field in provider.get_config_schema()] == [
+        "base_url",
+        "workspace_id",
+        "auth_token",
+        "email",
+        "password",
+    ]
+
+
 def test_is_available_true_with_login(monkeypatch, tmp_path: Path):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("METRONIX_BASE_URL", "http://localhost:8000")
@@ -145,3 +157,34 @@ def test_initialize_prefers_explicit_configured_agent_id(monkeypatch, tmp_path: 
     provider.initialize("sess-1", agent_identity="smoke-agent")
 
     assert provider._agent_id == "configured-agent"
+
+
+def test_initialize_uses_supplied_hermes_home_for_profile_isolation(
+    monkeypatch, tmp_path: Path
+) -> None:
+    global_home = tmp_path / "global"
+    profile_home = tmp_path / "profile"
+    global_home.mkdir()
+    profile_home.mkdir()
+    (global_home / "metronix.json").write_text(
+        json.dumps({"base_url": "https://wrong.example", "workspace_id": "WRONG"}),
+        encoding="utf-8",
+    )
+    (profile_home / "metronix.json").write_text(
+        json.dumps(
+            {
+                "base_url": "https://profile.example",
+                "workspace_id": "PROFILE",
+                "auth_token": "profile-token",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("metronix._get_hermes_home", lambda: global_home)
+
+    provider = MetronixMemoryProvider()
+    provider.initialize("sess-profile", hermes_home=str(profile_home))
+
+    assert provider._config["base_url"] == "https://profile.example"
+    assert provider._config["workspace_id"] == "PROFILE"
+    assert provider._hermes_home == profile_home

@@ -15,7 +15,7 @@ Metronix backend contracts and MCP integration docs remain in the
 ## Status
 
 This is a released standalone plugin. The current public package is
-[`2026.32.3`](https://pypi.org/project/hermes-memory-metronix/), and the
+[`2026.34.1`](https://pypi.org/project/hermes-memory-metronix/), and the
 [native Hermes smoke video](https://www.youtube.com/watch?v=Sc6QOyD7Yek)
 shows the end-to-end provider flow.
 
@@ -61,7 +61,7 @@ The script installs the latest `main` branch, then starts
 ### Option 2: PyPI
 
 ```bash
-uv tool install "hermes-memory-metronix>=2026.32.3"
+uv tool install "hermes-memory-metronix>=2026.34.1"
 hermes-metronix-setup --generate-token
 ```
 
@@ -82,12 +82,12 @@ not the REST API used by this provider.
 
 Public PyPI releases use `YYYY.WW.REVISION`: the calendar year and ISO week in
 which the release is cut, followed by an incrementing revision. The latest
-public release is `2026.32.3`.
+public release is `2026.34.1`.
 
-The matching GitHub release tag, for example `v2026.32.3`, points to the
+The matching GitHub release tag, for example `v2026.34.1`, points to the
 release commit; that commit hash is the precise build identifier. Private
 builds may append the hash as a PEP 440 local version, such as
-`2026.32.3+gabc1234`, but local versions are not published to PyPI.
+`2026.34.1+gabc1234`, but local versions are not published to PyPI.
 
 ### Hermes plugin manager
 
@@ -158,6 +158,26 @@ Important:
 - `METRONIX_MCP_API_KEY` is for `/mcp`, not `/api/v1/memory/*`
 - if you provide both a bearer token and login credentials, the client will
   retry once with a fresh login JWT when the original bearer gets a `401`
+
+### Privacy and turn synchronization
+
+`sync_turns` is enabled by default. When enabled, the provider sends the text
+content of each completed user message and assistant response to the configured
+Metronix endpoint and stores them as session-scoped memory records.
+
+The provider does not currently transmit Hermes's complete `messages`
+collection, tool-call arguments, or tool results. Prefetch search queries and
+explicit Hermes memory writes are transmitted separately as part of the core
+provider behavior described above.
+
+To prevent completed conversation turns from being transmitted, set this in
+`$HERMES_HOME/metronix.json`:
+
+```json
+{
+  "sync_turns": false
+}
+```
 
 ## Mapping notes
 

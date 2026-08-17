@@ -1,5 +1,5 @@
 name: metronix
-version: 0.1.0
+version: 2026.34.1
 description: "Metronix memory provider for Hermes with prefetch recall and built-in memory write-through."
 pip_dependencies:
   - requests
